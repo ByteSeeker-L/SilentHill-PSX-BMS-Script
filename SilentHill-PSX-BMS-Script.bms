@@ -1,0 +1,654 @@
+
+endian little
+comtype copy
+
+set FLAG_ENCRYPTED_1ST_FOLDER long 1
+set FLAG_NO_XA_CONTAINER long 2
+set FLAG_ALT_FILE_STRUCT long 4
+
+encryption crc ""
+log MEMORY_FILE 0 0x1000
+math CHECKSUM = QUICKBMS_CRC
+encryption "" ""
+
+set TOC_OFFSET long 0
+set FILE_COUNT long 0
+set RELEASE_FLAGS long 0
+set DIR_MODE long 0
+set TYPE_MODE long 0
+set RELEASE_NAME string ""
+
+if CHECKSUM == 0x2534D4BE
+    set RELEASE_NAME string "NTSC OPM16 Demo 98-10-19 (SCUS-94278)"
+    set TOC_OFFSET long 0xAA90
+    set FILE_COUNT long 886
+    set DIR_MODE long 3
+    set TYPE_MODE long 2
+    set RELEASE_FLAGS long 4
+elif CHECKSUM == 0x1BCE20E4
+    set RELEASE_NAME string "NTSC-J Demo 98-11-06 (SLPM-80366)"
+    set TOC_OFFSET long 0xB9B0
+    set FILE_COUNT long 849
+    set DIR_MODE long 2
+    set TYPE_MODE long 1
+    set RELEASE_FLAGS long 4
+elif CHECKSUM == 0xBE8E95CF
+    set RELEASE_NAME string "NTSC-J Demo 98-11-06 (SLPM-80363)"
+    set TOC_OFFSET long 0xB780
+    set FILE_COUNT long 849
+    set DIR_MODE long 2
+    set TYPE_MODE long 1
+    set RELEASE_FLAGS long 4
+elif CHECKSUM == 0x9AE067D4
+    set RELEASE_NAME string "PAL Demo 98-12-16 (SLED-01735)"
+    set TOC_OFFSET long 0xB648
+    set FILE_COUNT long 850
+    set DIR_MODE long 2
+    set TYPE_MODE long 1
+    set RELEASE_FLAGS long 0
+elif CHECKSUM == 0x55E85F78
+    set RELEASE_NAME string "NTSC Demo 99-01-16 (SLUS-90050)"
+    set TOC_OFFSET long 0xB648
+    set FILE_COUNT long 849
+    set DIR_MODE long 2
+    set TYPE_MODE long 1
+    set RELEASE_FLAGS long 0
+elif CHECKSUM == 0x08E0B752
+    set RELEASE_NAME string "PAL Demo 99-06-08 (SLED-02190)"
+    set TOC_OFFSET long 0xC8FC
+    set FILE_COUNT long 1015
+    set DIR_MODE long 1
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+elif CHECKSUM == 0x1782AA0A
+    set RELEASE_NAME string "PAL Demo 99-06-16 (SLED-02186)"
+    set TOC_OFFSET long 0xB8FC
+    set FILE_COUNT long 1015
+    set DIR_MODE long 1
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+elif CHECKSUM == 0x8B88326C
+    set RELEASE_NAME string "NTSC Preview 98-11-24 (SLUS-45678)"
+    set TOC_OFFSET long 0xB71C
+    set FILE_COUNT long 1926
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 2
+elif CHECKSUM == 0xCC454534
+    set RELEASE_NAME string "NTSC Review 99-01-07 (SLUS-00707)"
+    set TOC_OFFSET long 0xB7B8
+    set FILE_COUNT long 2076
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 2
+elif CHECKSUM == 0xC9FFEF2A
+    set RELEASE_NAME string "NTSC Trade Demo 99-01-17 (SLUS-80707)"
+    set TOC_OFFSET long 0xB850
+    set FILE_COUNT long 2040
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 0
+elif CHECKSUM == 0x84AB9750
+    set RELEASE_NAME string "NTSC Beta 99-01-22 (SLUS-00707)"
+    set TOC_OFFSET long 0xB850
+    set FILE_COUNT long 2072
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 0
+elif CHECKSUM == 0x1532C55C
+    set RELEASE_NAME string "NTSC-J Rev 0 99-01-26 (SLPM-86192)"
+    set TOC_OFFSET long 0xB91C
+    set FILE_COUNT long 2074
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+elif CHECKSUM == 0xCF9CD8E5
+    set RELEASE_NAME string "NTSC 1.1 99-02-10 (SLUS-00707)"
+    set TOC_OFFSET long 0xB91C
+    set FILE_COUNT long 2074
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+elif CHECKSUM == 0xEB733CAA
+    set RELEASE_NAME string "NTSC-J Rev 1/Rev 2 99-06-02 (SLPM-86192)"
+    set TOC_OFFSET long 0xB91C
+    set FILE_COUNT long 2074
+    set DIR_MODE long 0
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+elif CHECKSUM == 0x337E4A60
+    set RELEASE_NAME string "PAL 99-06-07 (SLES-01514)"
+    set TOC_OFFSET long 0xB8FC
+    set FILE_COUNT long 2310
+    set DIR_MODE long 1
+    set TYPE_MODE long 0
+    set RELEASE_FLAGS long 1
+else
+    print "Unsupported executable CRC32: %CHECKSUM%"
+    cleanexit
+endif
+
+print "Detected release: %RELEASE_NAME%"
+
+open FDSE "SILENT" 1 SILENT_EXISTS
+if SILENT_EXISTS == 0
+    print "SILENT file not found next to executable"
+    cleanexit
+endif
+
+open FDSE "HILL" 2 HILL_EXISTS
+if HILL_EXISTS == 0
+    print "HILL file not found (XA extraction may be skipped)"
+endif
+
+if DIR_MODE == 0
+    putarray 0 0  "1ST"
+    putarray 0 1  "ANIM"
+    putarray 0 2  "BG"
+    putarray 0 3  "CHARA"
+    putarray 0 4  "ITEM"
+    putarray 0 5  "MISC"
+    putarray 0 6  "SND"
+    putarray 0 7  "TEST"
+    putarray 0 8  "TIM"
+    putarray 0 9  "VIN"
+    putarray 0 10 "XA"
+elif DIR_MODE == 1
+    putarray 0 0  "1ST"
+    putarray 0 1  "ANIM"
+    putarray 0 2  "BG"
+    putarray 0 3  "CHARA"
+    putarray 0 4  "ITEM"
+    putarray 0 5  "MISC"
+    putarray 0 6  "SND"
+    putarray 0 7  "TEST"
+    putarray 0 8  "TIM"
+    putarray 0 9  "VIN"
+    putarray 0 10 "VIN2"
+    putarray 0 11 "VIN3"
+    putarray 0 12 "VIN4"
+    putarray 0 13 "VIN5"
+    putarray 0 14 "XA"
+elif DIR_MODE == 2
+    putarray 0 0 "1ST"
+    putarray 0 1 "ANIM"
+    putarray 0 2 "BG"
+    putarray 0 3 "CHARA"
+    putarray 0 4 "ITEM"
+    putarray 0 5 "MISC"
+    putarray 0 6 "SND"
+    putarray 0 7 "TIM"
+    putarray 0 8 "VIN"
+    putarray 0 9 "XA"
+elif DIR_MODE == 3
+    putarray 0 0 "1ST"
+    putarray 0 1 "ANIM"
+    putarray 0 2 "BG"
+    putarray 0 3 "CHARA"
+    putarray 0 4 "ITEM"
+    putarray 0 5 "SND"
+    putarray 0 6 "TEST"
+    putarray 0 7 "TIM"
+    putarray 0 8 "VIN"
+    putarray 0 9 "XA"
+endif
+
+if TYPE_MODE == 0
+    putarray 1 0  "TIM"
+    putarray 1 1  "VAB"
+    putarray 1 2  "BIN"
+    putarray 1 3  "DMS"
+    putarray 1 4  "ANM"
+    putarray 1 5  "PLM"
+    putarray 1 6  "IPD"
+    putarray 1 7  "ILM"
+    putarray 1 8  "TMD"
+    putarray 1 9  "DAT"
+    putarray 1 10 "KDT"
+    putarray 1 11 "CMP"
+    putarray 1 12 "TXT"
+    putarray 1 13 "UU1"
+    putarray 1 14 "UU2"
+    putarray 1 15 ""
+elif TYPE_MODE == 1
+    putarray 1 0  "TIM"
+    putarray 1 1  "VAB"
+    putarray 1 2  "BIN"
+    putarray 1 3  "ANM"
+    putarray 1 4  "DMS"
+    putarray 1 5  "PLM"
+    putarray 1 6  "IPD"
+    putarray 1 7  "ILM"
+    putarray 1 8  "TMD"
+    putarray 1 9  "DAT"
+    putarray 1 10 "KDT"
+    putarray 1 11 "CMP"
+    putarray 1 12 "TXT"
+    putarray 1 13 "UU1"
+    putarray 1 14 "UU2"
+    putarray 1 15 ""
+elif TYPE_MODE == 2
+    putarray 1 0  "TIM"
+    putarray 1 1  "VAB"
+    putarray 1 2  "BIN"
+    putarray 1 3  "ANM"
+    putarray 1 4  "DMS"
+    putarray 1 5  "PLM"
+    putarray 1 6  "IPD"
+    putarray 1 7  "ILM"
+    putarray 1 8  "TMD"
+    putarray 1 9  "KDT"
+    putarray 1 10 "CMP"
+    putarray 1 11 "UU1"
+    putarray 1 12 "UU2"
+    putarray 1 13 "UU3"
+    putarray 1 14 "UU4"
+    putarray 1 15 ""
+endif
+
+set SILENT_COUNT long 0
+set HILL_COUNT long 0
+
+goto TOC_OFFSET
+for I = 0 < FILE_COUNT
+    get META long
+    get FILE1 long
+    get FILE2 long
+
+    set TMP_FLAG long RELEASE_FLAGS
+    math TMP_FLAG & FLAG_ALT_FILE_STRUCT
+
+    if TMP_FLAG == 0
+        set SIZE_UNITS long META
+        math SIZE_UNITS u>> 19
+
+        set LBA long META
+        math LBA & 0x7ffff
+
+        set DIR_INDEX long FILE1
+        math DIR_INDEX & 0x0f
+
+        set TYPE_INDEX long FILE2
+        math TYPE_INDEX u>> 24
+        math TYPE_INDEX & 0x0f
+
+        set C0 long FILE1
+        math C0 u>> 4
+        math C0 & 0x3f
+        math C0 + 32
+
+        set C1 long FILE1
+        math C1 u>> 10
+        math C1 & 0x3f
+        math C1 + 32
+
+        set C2 long FILE1
+        math C2 u>> 16
+        math C2 & 0x3f
+        math C2 + 32
+
+        set C3 long FILE1
+        math C3 u>> 22
+        math C3 & 0x3f
+        math C3 + 32
+
+        set C4 long FILE2
+        math C4 u>> 0
+        math C4 & 0x3f
+        math C4 + 32
+
+        set C5 long FILE2
+        math C5 u>> 6
+        math C5 & 0x3f
+        math C5 + 32
+
+        set C6 long FILE2
+        math C6 u>> 12
+        math C6 & 0x3f
+        math C6 + 32
+
+        set C7 long FILE2
+        math C7 u>> 18
+        math C7 & 0x3f
+        math C7 + 32
+    else
+        set SIZE_UNITS long META
+        math SIZE_UNITS u>> 19
+        math SIZE_UNITS & 0x0fff
+
+        set LBA long META
+        math LBA & 0x7ffff
+
+        set DIR_INDEX0 long META
+        math DIR_INDEX0 u>> 31
+        math DIR_INDEX0 & 0x01
+
+        set DIR_INDEX1 long FILE1
+        math DIR_INDEX1 & 0x07
+
+        set DIR_INDEX long DIR_INDEX1
+        math DIR_INDEX u<< 1
+        math DIR_INDEX | DIR_INDEX0
+
+        set TYPE_INDEX long FILE2
+        math TYPE_INDEX u>> 19
+        math TYPE_INDEX & 0xff
+        if TYPE_INDEX >= 16
+            set TYPE_INDEX long 15
+        endif
+
+        set C0 long FILE1
+        math C0 u>> 3
+        math C0 & 0x3f
+        math C0 + 32
+
+        set C1 long FILE1
+        math C1 u>> 9
+        math C1 & 0x3f
+        math C1 + 32
+
+        set C2 long FILE1
+        math C2 u>> 15
+        math C2 & 0x3f
+        math C2 + 32
+
+        set C3 long FILE1
+        math C3 u>> 21
+        math C3 & 0x3f
+        math C3 + 32
+
+        set C4_A long FILE1
+        math C4_A u>> 27
+        math C4_A & 0x1f
+
+        set C4_B long FILE2
+        math C4_B & 0x01
+        math C4_B u<< 5
+
+        set C4 long C4_A
+        math C4 | C4_B
+        math C4 + 32
+
+        set C5 long FILE2
+        math C5 u>> 1
+        math C5 & 0x3f
+        math C5 + 32
+
+        set C6 long FILE2
+        math C6 u>> 7
+        math C6 & 0x3f
+        math C6 + 32
+
+        set C7 long FILE2
+        math C7 u>> 13
+        math C7 & 0x3f
+        math C7 + 32
+    endif
+
+    string NAME p "%c%c%c%c%c%c%c%c" C0 C1 C2 C3 C4 C5 C6 C7
+
+    for TRIM = 0 < 8
+        set NAME_LEN strlen NAME
+        if NAME_LEN == 0
+            break
+        endif
+
+        set LAST_IDX long NAME_LEN
+        math LAST_IDX - 1
+        getvarchr LAST_CHR NAME LAST_IDX
+
+        if LAST_CHR == 0x20
+            string NAME - 1
+        else
+            break
+        endif
+    next TRIM
+
+    getarray DIR 0 DIR_INDEX
+    getarray TYPE 1 TYPE_INDEX
+
+    if TYPE == ""
+        string PATH p "%s/%s" DIR NAME
+    else
+        string PATH p "%s/%s.%s" DIR NAME TYPE
+    endif
+
+    if DIR == "XA"
+        putarray 20 HILL_COUNT PATH
+        putarray 21 HILL_COUNT TYPE
+        putarray 22 HILL_COUNT SIZE_UNITS
+        putarray 23 HILL_COUNT LBA
+        math HILL_COUNT + 1
+    else
+        putarray 10 SILENT_COUNT PATH
+        putarray 11 SILENT_COUNT TYPE
+        putarray 12 SILENT_COUNT SIZE_UNITS
+        putarray 13 SILENT_COUNT LBA
+        math SILENT_COUNT + 1
+    endif
+next I
+
+if SILENT_COUNT > 0
+    getarray SILENT_BASE_LBA 13 0
+
+    for I = 0 < SILENT_COUNT
+        getarray PATH 10 I
+        getarray TYPE 11 I
+        getarray SIZE_UNITS 12 I
+        getarray LBA 13 I
+
+        set OFFSET long LBA
+        math OFFSET - SILENT_BASE_LBA
+        math OFFSET * 2048
+
+        set SIZE long 0
+        if SIZE_UNITS != 0
+            if TYPE != ""
+                set SIZE long SIZE_UNITS
+                math SIZE * 256
+            endif
+        endif
+
+        if SIZE == 0
+            set NXT long I
+            math NXT + 1
+            if NXT < SILENT_COUNT
+                getarray NXT_LBA 13 NXT
+                set SIZE long NXT_LBA
+                math SIZE - LBA
+                math SIZE * 2048
+            else
+                get SIZE asize 1
+                math SIZE - OFFSET
+            endif
+        endif
+
+        set HANDLED long 0
+
+        if TYPE == "BIN"
+            set TMP_FLAG long RELEASE_FLAGS
+            math TMP_FLAG & FLAG_ENCRYPTED_1ST_FOLDER
+            if TMP_FLAG != 0
+                if PATH & "1ST/"
+                    log MEMORY_FILE OFFSET SIZE 1
+                    callfunction DECRYPT_OVERLAY_TO_FILE 1 PATH SIZE
+                    set HANDLED long 1
+                elif PATH & "HP_SAFE1" || PATH & "S__SAFE2"
+                    goto OFFSET 1
+                    get DEC_SIZE long 1
+
+                    set ZOFF long OFFSET
+                    math ZOFF + 4
+                    set ZSIZE long SIZE
+                    math ZSIZE - 4
+
+                    comtype lzss0
+                    clog MEMORY_FILE ZOFF ZSIZE DEC_SIZE 1
+                    comtype copy
+
+                    callfunction DECRYPT_OVERLAY_TO_FILE 1 PATH DEC_SIZE
+                    set HANDLED long 1
+                endif
+            endif
+        elif TYPE == "CMP"
+            log PATH OFFSET SIZE 1
+
+            goto OFFSET 1
+            get DEC_SIZE long 1
+
+            set ZOFF long OFFSET
+            math ZOFF + 4
+            set ZSIZE long SIZE
+            math ZSIZE - 4
+
+            if ZSIZE > 0
+                string DEC_PATH p "%s.dec" PATH
+                comtype lzss0
+                clog DEC_PATH ZOFF ZSIZE DEC_SIZE 1
+                comtype copy
+            endif
+
+            set HANDLED long 1
+        endif
+
+        if HANDLED == 0
+            log PATH OFFSET SIZE 1
+        endif
+    next I
+endif
+
+set CAN_EXTRACT_HILL long 1
+set TMP_FLAG long RELEASE_FLAGS
+math TMP_FLAG & FLAG_NO_XA_CONTAINER
+if TMP_FLAG != 0
+    set CAN_EXTRACT_HILL long 0
+endif
+if HILL_EXISTS == 0
+    set CAN_EXTRACT_HILL long 0
+endif
+
+if CAN_EXTRACT_HILL != 0
+    if HILL_COUNT > 0
+        getarray HILL_BASE_LBA 23 0
+
+        for I = 0 < HILL_COUNT
+            getarray PATH 20 I
+            getarray TYPE 21 I
+            getarray SIZE_UNITS 22 I
+            getarray LBA 23 I
+
+            set OFFSET long LBA
+            math OFFSET - HILL_BASE_LBA
+            math OFFSET * 2336
+
+            set SIZE long 0
+            if SIZE_UNITS != 0
+                if TYPE != ""
+                    set SIZE long SIZE_UNITS
+                    math SIZE * 256
+                endif
+            endif
+
+            if SIZE == 0
+                set NXT long I
+                math NXT + 1
+                if NXT < HILL_COUNT
+                    getarray NXT_LBA 23 NXT
+                    set SIZE long NXT_LBA
+                    math SIZE - LBA
+                    math SIZE * 2336
+                else
+                    get SIZE asize 2
+                    math SIZE - OFFSET
+                endif
+            endif
+
+            set HANDLED long 0
+
+            if TYPE == "BIN"
+                set TMP_FLAG long RELEASE_FLAGS
+                math TMP_FLAG & FLAG_ENCRYPTED_1ST_FOLDER
+                if TMP_FLAG != 0
+                    if PATH & "1ST/"
+                        log MEMORY_FILE OFFSET SIZE 2
+                        callfunction DECRYPT_OVERLAY_TO_FILE 1 PATH SIZE
+                        set HANDLED long 1
+                    elif PATH & "HP_SAFE1" || PATH & "S__SAFE2"
+                        goto OFFSET 2
+                        get DEC_SIZE long 2
+
+                        set ZOFF long OFFSET
+                        math ZOFF + 4
+                        set ZSIZE long SIZE
+                        math ZSIZE - 4
+
+                        comtype lzss0
+                        clog MEMORY_FILE ZOFF ZSIZE DEC_SIZE 2
+                        comtype copy
+
+                        callfunction DECRYPT_OVERLAY_TO_FILE 1 PATH DEC_SIZE
+                        set HANDLED long 1
+                    endif
+                endif
+            elif TYPE == "CMP"
+                log PATH OFFSET SIZE 2
+
+                goto OFFSET 2
+                get DEC_SIZE long 2
+
+                set ZOFF long OFFSET
+                math ZOFF + 4
+                set ZSIZE long SIZE
+                math ZSIZE - 4
+
+                if ZSIZE > 0
+                    string DEC_PATH p "%s.dec" PATH
+                    comtype lzss0
+                    clog DEC_PATH ZOFF ZSIZE DEC_SIZE 2
+                    comtype copy
+                endif
+
+                set HANDLED long 1
+            endif
+
+            if HANDLED == 0
+                log PATH OFFSET SIZE 2
+            endif
+        next I
+    endif
+endif
+
+cleanexit
+
+startfunction DECRYPT_OVERLAY_TO_FILE
+    set OUT_PATH string DECRYPT_OVERLAY_TO_FILE_ARG1
+    set DATA_SIZE long DECRYPT_OVERLAY_TO_FILE_ARG2
+
+    goto 0 MEMORY_FILE
+    log MEMORY_FILE2 0 0
+
+    set SEED long 0
+    set WORDS long DATA_SIZE
+    math WORDS u/ 4
+
+    for J = 0 < WORDS
+        get WORD long MEMORY_FILE
+
+        math SEED + 0x01309125
+        math SEED * 0x03a452f7
+
+        math WORD ^ SEED
+        put WORD long MEMORY_FILE2
+    next J
+
+    set REM long DATA_SIZE
+    math REM % 4
+    if REM > 0
+        for R = 0 < REM
+            get B byte MEMORY_FILE
+            put B byte MEMORY_FILE2
+        next R
+    endif
+
+    log OUT_PATH 0 DATA_SIZE MEMORY_FILE2
+endfunction
